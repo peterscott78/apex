@@ -1,0 +1,34 @@
+
+++ Form Field Variables
+field 
+	seperator
+	textbox
+	textarea
+	select
+	boolean
+
+label
+placeholder
+value
+data_source
+
+required (boolean)
+datatype
+	email
+	number
+	integer
+	decimal
+	alphanum
+minlength
+maxlength
+range (example: (3, 10))
+equalto
+
+	url
+
+
+
+
+
+
+

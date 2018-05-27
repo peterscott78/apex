@@ -1,0 +1,83 @@
+)S#37983) [2017-08-06 12:17:03] #256 Unable to create .tar archive at /home/boxer/devel/apex/data/tmp/core_.tar.  Server Message: Cannot create phar '/home/boxer/devel/apex/data/tmp/core_.tar', file extension (or combination) not recognised or the directory does not exist on file data/libstd/network.php:82
+)S#16935) [2017-08-06 13:09:53] #256 Unable to create .tar archive at /home/boxer/devel/apex/data/tmp/core_.tar.  Server Message: Cannot create phar '/home/boxer/devel/apex/data/tmp/core_.tar', file extension (or combination) not recognised or the directory does not exist on file data/libstd/network.php:82
+)S#66268) [2017-08-06 13:10:57] #256 Unable to create .tar archive at /home/boxer/devel/apex/data/tmp/core_.tar.  Server Message: Cannot create phar '/home/boxer/devel/apex/data/tmp/core_.tar', file extension (or combination) not recognised or the directory does not exist on file data/libstd/network.php:83
+)S#65936) [2017-08-06 13:40:31] #256 Unable to create .tar archive at /home/boxer/devel/apex/data/tmp/core.tar.  Server Message: Cannot create phar '/home/boxer/devel/apex/data/tmp/core.tar', file extension (or combination) not recognised or the directory does not exist on file data/libstd/network.php:84
+)S#47637) [2017-08-06 13:41:21] #256 Unable to create .tar archive at /home/boxer/devel/apex/data/tmp/core.tar.  Server Message: Cannot create phar '/home/boxer/devel/apex/data/tmp/core.tar', file extension (or combination) not recognised or the directory does not exist on file data/libstd/network.php:84
+)S#1361) [2017-08-08 22:46:38] #256 No file exists for the component type 'controller', with the alias '', within the package 'core'.  Please ensure the proper file exists for this component. on file data/libstd/functions.php:100
+)S#53015) [2017-08-09 00:07:06] #256 AJAX function does not exist 'search_table' within the package '' on file data/controller/core/http_requests/ajax.php:24
+)S#94573) [2017-08-09 15:01:48] #256 No file exists for the component type 'controller', with the alias '', within the package 'core'.  Please ensure the proper file exists for this component. on file data/libstd/functions.php:104
+)S#9232) [2017-08-09 16:17:25] #256 No file exists for the component type 'controller', with the alias '', within the package 'core'.  Please ensure the proper file exists for this component. on file data/libstd/functions.php:104
+)S#19520) [2017-08-16 15:33:22] #256 Component 'tbl_notifications' of the type 'table' does not exist. on file data/libstd/functions.php:96
+)S#5118) [2017-08-17 03:48:15] #256 No file exists for the component type 'controller', with the alias '', within the package 'core'.  Please ensure the proper file exists for this component. on file data/libstd/functions.php:104
+)S#18932) [2017-08-17 03:49:11] #256 No file exists for the component type 'controller', with the alias '', within the package 'core'.  Please ensure the proper file exists for this component. on file data/libstd/functions.php:104
+)S#92794) [2017-08-17 20:55:04] #256 No file exists for the component type 'controller', with the alias '', within the package 'core'.  Please ensure the proper file exists for this component. on file data/libstd/functions.php:104
+)S#66312) [2017-08-17 20:55:52] #256 No file exists for the component type 'controller', with the alias '', within the package 'core'.  Please ensure the proper file exists for this component. on file data/libstd/functions.php:104
+)S#7573) [2017-08-21 11:38:56] #256 No file exists for the component type 'controller', with the alias '', within the package 'core'.  Please ensure the proper file exists for this component. on file data/libstd/functions.php:104
+)S#85015) [2017-08-22 20:56:57] #256 SQL Database Error.  Unable to execute SQL statement -- .<br><br>
+
+  on file data/libstd/db/mysql.php:547
+)S#52807) [2017-08-22 20:57:02] #256 SQL Database Error.  Unable to execute SQL statement -- .<br><br>
+
+  on file data/libstd/db/mysql.php:547
+)S#2915) [2017-08-22 20:57:06] #256 SQL Database Error.  Unable to execute SQL statement -- .<br><br>
+
+  on file data/libstd/db/mysql.php:547
+)S#51546) [2017-08-22 20:57:40] #256 SQL Database Error.  Unable to execute SQL statement -- .<br><br>
+
+  on file data/libstd/db/mysql.php:547
+)S#74202) [2017-08-28 19:49:19] #256 SQL Database Error.  Unable to execute SQL statement -- INSERT INTO internal_components (order_num,type,package,parent,alias,value) VALUES ('0', 'config', 'users', '', 'username_column', 'username').<br><br>
+
+ Cannot add or update a child row: a foreign key constraint fails (`apex`.`internal_components`, CONSTRAINT `internal_components_ibfk_1` FOREIGN KEY (`package`) REFERENCES `internal_packages` (`alias`) ON DELETE CASCADE) on file data/libstd/db/mysql.php:549
+)S#67335) [2017-08-28 19:49:32] #256 SQL Database Error.  Unable to execute SQL statement -- INSERT INTO internal_components (order_num,type,package,parent,alias,value) VALUES ('0', 'config', 'users', '', 'username_column', 'username').<br><br>
+
+ Cannot add or update a child row: a foreign key constraint fails (`apex`.`internal_components`, CONSTRAINT `internal_components_ibfk_1` FOREIGN KEY (`package`) REFERENCES `internal_packages` (`alias`) ON DELETE CASCADE) on file data/libstd/db/mysql.php:549
+)S#51760) [2017-08-28 20:20:28] #256 SQL Database Error.  Unable to execute SQL statement -- INSERT INTO internal_components (order_num,type,package,parent,alias,value) VALUES ('0', 'config', 'users', '', 'username_column', 'username').<br><br>
+
+ Cannot add or update a child row: a foreign key constraint fails (`apex`.`internal_components`, CONSTRAINT `internal_components_ibfk_1` FOREIGN KEY (`package`) REFERENCES `internal_packages` (`alias`) ON DELETE CASCADE) on file data/libstd/db/mysql.php:549
+)S#78252) [2017-08-29 04:11:57] #256 SQL Database Error.  Unable to execute SQL statement -- UPDATE cms_menus SET order_num = order_num + 1 WHERE area = 'public' AND parent = 'index' AND order_num > .<br><br>
+
+ You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1 on file data/libstd/db/mysql.php:549
+)S#16978) [2017-08-29 04:22:54] #256 SQL Database Error.  Unable to execute SQL statement -- UPDATE cms_menus SET order_num = order_num + 1 WHERE area = 'public' AND parent = 'index' AND order_num > .<br><br>
+
+ You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1 on file data/libstd/db/mysql.php:549
+)S#12606) [2017-08-29 04:39:57] #256 SQL Database Error.  Unable to execute SQL statement -- UPDATE cms_menus SET order_num = order_num + 1 WHERE area = 'public' AND parent = 'index' AND order_num > .<br><br>
+
+ You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1 on file data/libstd/db/mysql.php:549
+)S#94367) [2017-08-29 05:33:47] #256 SQL Database Error.  Unable to execute SQL statement -- UPDATE cms_menus SET order_num = order_num + 1 WHERE area = 'public' AND parent = 'index' AND order_num > .<br><br>
+
+ You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1 on file data/libstd/db/mysql.php:549
+)S#15830) [2017-08-29 05:54:40] #256 SQL Database Error.  Unable to execute SQL statement -- UPDATE cms_menus SET order_num = order_num + 1 WHERE area = 'public' AND parent = 'index' AND order_num > .<br><br>
+
+ You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1 on file data/libstd/db/mysql.php:549
+)S#89773) [2017-08-29 07:27:44] #256 SQL Database Error.  Unable to execute SQL statement -- UPDATE cms_menus SET order_num = order_num + 1 WHERE area = 'public' AND parent = 'index' AND order_num > .<br><br>
+
+ You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1 on file data/libstd/db/mysql.php:549
+)S#42384) [2017-08-29 15:54:23] #256 SQL Database Error.  Unable to execute SQL statement -- UPDATE cms_menus SET order_num = order_num + 1 WHERE area = 'public' AND parent = 'index' AND order_num > .<br><br>
+
+ You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1 on file data/libstd/db/mysql.php:549
+)S#35165) [2017-08-30 22:06:47] #256 SQL Database Error.  Unable to execute SQL statement -- SELECT max(order_num_ FROM cms_menus WHERE area = 'admin' AND parent = ''.<br><br>
+
+ You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'FROM cms_menus WHERE area = 'admin' AND parent = ''' at line 1 on file data/libstd/db/mysql.php:549
+)S#46557) [2017-08-30 22:09:31] #256 Package cinstallation file does not exist at, /data/pkg/devcit/package.php on file data/libstd/package.php:26
+)S#686) [2017-10-18 14:32:43] #256 No file exists for the component type 'controller', with the alias '', within the package 'core'.  Please ensure the proper file exists for this component. on file data/libstd/functions.php:104
+)S#) [2018-02-08 22:54:41] #256 SQL Database Error.  Unable to execute SQL statement -- SELECT type,package,alias,value FROM internal_components WHERE type IN ('config', 'lib').<br><br>
+
+ Unknown column 'package' in 'field list' on file data/libstd/db/mysql.php:549
+)S#) [2018-02-08 22:54:42] #256 SQL Database Error.  Unable to execute SQL statement -- SELECT type,package,alias,value FROM internal_components WHERE type IN ('config', 'lib').<br><br>
+
+ Unknown column 'package' in 'field list' on file data/libstd/db/mysql.php:549
+)S#) [2018-02-08 22:54:42] #256 SQL Database Error.  Unable to execute SQL statement -- SELECT type,package,alias,value FROM internal_components WHERE type IN ('config', 'lib').<br><br>
+
+ Unknown column 'package' in 'field list' on file data/libstd/db/mysql.php:549
+)S#) [2018-02-22 01:34:45] #256 SQL Database Error.  Unable to execute SQL statement -- SELECT type,package,alias,value FROM internal_components WHERE type IN ('config', 'lib').<br><br>
+
+ Unknown column 'package' in 'field list' on file data/libstd/db/mysql.php:549
+)S#) [2018-02-22 01:34:45] #256 SQL Database Error.  Unable to execute SQL statement -- SELECT type,package,alias,value FROM internal_components WHERE type IN ('config', 'lib').<br><br>
+
+ Unknown column 'package' in 'field list' on file data/libstd/db/mysql.php:549
+)S#) [2018-02-22 01:35:45] #256 SQL Database Error.  Unable to execute SQL statement -- SELECT type,package,alias,value FROM internal_components WHERE type IN ('config', 'lib').<br><br>
+
+ Unknown column 'package' in 'field list' on file data/libstd/db/mysql.php:549
+)S#93969) [2018-03-01 01:34:51] #256 SQL Database Error.  Unable to execute SQL statement -- SELECT * FROM users_profile_fields ORDER BY order_nu.<br><br>
+
+ Unknown column 'order_nu' in 'order clause' on file data/libstd/db/mysql.php:549

@@ -1,0 +1,428 @@
+<?php
+declare(strict_types = 1);
+
+
+////////////////////////////////////////////////////////////
+// Error
+////////////////////////////////////////////////////////////
+
+function error(int $errno, string $errmsg, string $errfile, int $errline) {
+
+	// Initialize
+	$errfile = trim(str_replace(SITE_PATH, '', $errfile), '/');
+
+	// Get logfiles to add to
+	$logfile = '';
+	if ($errno == 1 || $errno == 4 || $errno == 16)  { $logfile = 'server.log'; }
+	if ($errno == 2 || $errno == 8 || $errno == 32 || $errno == 512 || $errno == 1024) { $logfile = 'warning.log'; }
+	if ($errno == 128 || $errno == 256) { $logfile = 'error.log'; }
+	if ($errno == 2048 || $errno == 8192) { $logfile = 'info.log'; }
+
+	// Add log entry, if needed
+	if (LOG_LEVEL >= 1 || (log_level == 2 && $logfile == 'warning.log')) {
+		$datestamp = DB::get_field("SELECT now()");
+		$log_line = ')S#' . $_SESSION['_log_id'] . ') [' . $datestamp . '] #' . $errno . ' ' . $errmsg . ' on file ' . $errfile . ':' . $errline;
+
+		if (is_writeable(SITE_PATH . '/data/logs/' . $logfile)) {
+			error_log("$log_line\n", 3, SITE_PATH . '/data/logs/' . $logfile);
+		} else {
+			echo "<b>ERROR:</b> The logfile at data/logs/$logfile is not writeable.  Please check your server permissions, or turn the log level down / off.<br />\n";
+		}
+	}
+
+	// Return, if not displaying template
+	if (USE_STRICT != 1 && $logfile =='warning.log') { return true; }
+
+	// Check for command line usage
+	if ((!isset($_SERVER['REQUEST)NETHOD'])) || (!isset($_SERVER['HTTP_HOST']))) { 
+		echo "ERROR: $errmsg\nFile: $errfile\nLine: $errline\n\n"; exit(0);
+	}
+
+	// Check if 500.tpl error template exists
+	if (!file_exists(SITE_PATH . '/data/tpl/' . $GLOBALS['_panel'] . '/500.tpl')) {
+		echo "<b>ERROR!</b>  We're sorry, but an unexpected error occurred preventing this software system from running.  Additionally, a 500.tpl template was not found.<br /><blockquote>\n";
+		echo "<b>#" . $errno . ": $errmsg</b><br />in file $errfile : $errline</blockquote><br />\n"; exit(0);	
+	}
+
+	// Display template
+	$template = new template('500');
+	$template->assign('errno', $errno);
+	$template->assign('errmsg', $errmsg);
+	$template->assign('errfile', $errfile);
+	$template->assign('errline', $errline);
+	echo $template->parse();
+	exit(0);
+ 
+}
+
+////////////////////////////////////////////////////////////
+// Check if components exists
+////////////////////////////////////////////////////////////
+
+function component_exists(string $type, string $alias, string $package = '', string $parent = ''):bool { 
+
+		// Check for package
+	if ($package == '') {
+		$packages = DB::get_column("SELECT package FROM internal_components WHERE type = %s AND alias = %s AND parent = %s ORDER  BY id", $type, $alias, $parent);
+
+		// Check num rows
+		if (count($packages) == 0) { return false; }		
+		elseif (count($packages) > 1) { trigger_error("More than one component with the type '$type' and alias '$alias'.  You must specify a package alias when using this component.", E_USER_ERROR); }
+		$package = $packages[0];
+
+	}
+
+	// Check filename
+	$filename = SITE_PATH .'/data/' . $type . '/' . $package . '/' . ($parent != '' ? $parent . '/' : '') . $alias . '.php';
+	return file_exists($filename) === true ? true : false;
+
+}
+
+////////////////////////////////////////////////////////////
+// Load component
+////////////////////////////////////////////////////////////
+
+function load_component(string $type, string $alias, string $package = '', string $parent = '', array $data = array()) { 
+
+		// Check for package
+	if ($package == '') {
+		$packages = DB::get_column("SELECT package FROM internal_components WHERE type = %s AND alias = %s AND parent = %s ORDER  BY id", $type, $alias, $parent);
+
+		// Check num ro		
+		if (count($packages) == 0) { trigger_error("Component '$alias' of the type '$type' does not exist.", E_USER_ERROR); }
+		elseif (count($packages) > 1) { trigger_error("More than one component with the type '$type' and alias '$alias'.  You must specify a package alias when using this component.", E_USER_ERROR); }
+		$package = $packages[0];
+
+	}
+
+	// Check filename
+	$filename = SITE_PATH .'/data/' . $type . '/' . $package . '/' . ($parent != '' ? $parent . '/' : '') . $alias . '.php';
+	if (!file_exists($filename)) { trigger_error("No file exists for the component type '$type', with the alias '$alias', within the package '$package'.  Please ensure the proper file exists for this component.", E_USER_ERROR); }
+	require_once($filename);
+
+	// Check class name
+		$class_name = ($parent == '') ? implode('_', array($type, $package, $alias)) : implode('_', array($type, $package, $parent, $alias));
+	if (!class_exists($class_name)) { trigger_error("The class name '$class_name' does not exist, although the file for the component is correctly placed.  Please check the file for the correct class name.", E_USER_ERROR); }
+
+	// Load class & return
+	return new $class_name($data);
+}
+
+
+////////////////////////////////////////////////////////////
+// Generate random string
+////////////////////////////////////////////////////////////
+
+function generate_random_string(int $length = 6):string { 
+
+	$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+	
+	// Generate random salt
+	$string = '';
+	for ($x = 1; $x <= $length; $x++) {
+		$num = sprintf("%0d", rand(1, strlen($characters) - 1));
+		$string .= $characters[$num];
+	}
+	
+	// Return
+	return $string;
+
+}
+
+
+////////////////////////////////////////////////////////////
+// Translate
+////////////////////////////////////////////////////////////
+
+function tr(string $text):string { 
+	return $text;
+
+}
+
+
+
+////////////////////////////////////////////////////////////
+// Create hash options
+////////////////////////////////////////////////////////////
+
+function create_hash_options(string $hash_alias, string $selected = '', string $form_field = 'select', string $package = '', string $form_name = ''):string { 
+
+	// Check for multiple hashes
+	if ($package == '') { 
+		$count = DB::get_field("SELECT count(*) FROM internal_components WHERE type = 'hash' AND alias = %s", $hash_alias);
+	if ($count > 1) { trigger_error("The hash '$hash_alias' exists more than once in this system.  You must define the package alias in the appropriate HTML / location.", E_USER_ERROR); }
+	}
+
+	// gET sql
+	if ($package == '') { 
+		$result = DB::query("SELECT alias,value FROM internal_components WHERE type = 'hash_var' AND parent = %s ORDER BY order_num", $hash_alias);
+	} else { 
+		$result = DB::query("SELECT alias,value FROM internal_components WHERE type = 'hash_var' AND parent = %s AND package = %s ORDER BY order_num", $hash_alias, $package);
+	}
+
+	// Create options
+	$html = '';	
+	while ($row = DB::fetch_array($result)) { 
+
+		// Select
+		if ($form_field == 'select') { 
+			$chk = $selected == $row[0] ? 'selected="selected"' : '';
+			$html .= "<option value=\"$row[0]\" $chk>$row[1]</option>";
+
+		// Checkbox
+		} elseif ($form_field == 'checkbox') { 
+			$chk = (is_array($selected) && in_array($row[0], $selected_)) || ($selected == $row[0]) ? 'checked="checked"' : '';
+						$html .= "<input type=\"checkbox\" name=\"" . $form_name . "[]\" value=\"$row[0]\" $chk> $row[1]<br />";
+		} elseif ($form_field == 'radio') { 
+			$chk = $selected == $row[0] ? 'checked="checked"' : '';
+			$html .= "<input type=\"radio\" name=\"$form_name\" value=\"$row[0]\" $chk> $row[1]<br />";
+		}
+	}
+
+	// Return
+	return $html;
+
+}
+
+
+////////////////////////////////////////////////////////////
+// Get hash variable
+////////////////////////////////////////////////////////////
+
+function get_hash_variable(string $hash_alias, string $var_alias, string $package = '') {
+
+	// Check for multiple hashes
+	if ($package == '') { 
+		$count = DB::get_field("SELECT count(*) FROM internal_components WHERE type = 'hash' AND alias = %s", $hash_alias);
+	if ($count > 1) { trigger_error("The hash '$hash_alias' exists more than once in this system.  You must define the package alias in the appropriate HTML / location.", E_USER_ERROR); }
+	}
+
+	// Get hash variable
+	$ok=true;
+	if ($package == '') { 
+	if (!$value = DB::get_field("SELECT value FROM internal_components WHERE type = 'hash_var' AND parent = %s AND alias = %s", $hash_alias, $var_alias)) { $ok = false; }
+
+	} else { 
+	if (!$value = DB::get_field("SELECT value FROM internal_components WHERE type = 'hash_var' AND package = %s AND parent = %s AND alias = %s", $package, $hash_alias, $var_alias)) { $ok = false; }
+	}
+
+	
+  if ($ok === false) { trigger_error("No hash variable exists with alias '$var_alias' in the hash '$hash_alias' from package '$package'", E_USER_ERROR); }
+	 
+
+	// Return
+return $value;
+
+
+
+}
+
+////////////////////////////////////////////////////////////
+// Parse data source
+////////////////////////////////////////////////////////////
+
+function parse_data_source(string $data_source, string $selected = '', string $form_field = 'select', string $package = '', string $form_name = ''):string { 
+
+
+	$source = explode(":", $data_source);
+
+	if ($source[0] == 'hash') {  
+		$html = create_hash_options($source[1], $selected, $form_field, $package);
+
+	}
+
+	// Return
+	return $html;
+
+}
+
+
+////////////////////////////////////////////////////////////
+// Check blank vars
+////////////////////////////////////////////////////////////
+
+function check_blank_vars(array $vars = array(), string $type = 'error') { 
+
+	// Initialize
+	global $template;
+
+	// Go through vars
+	foreach ($vars as $var) { 
+		if (!isset($_POST[$var])) {
+			if ($type == 'template') { $template->add_message("No $var variable was specified.", 'error'); }
+			else { trigger_error("No $var variable defined.", E_USER_ERROR); }
+		}
+		if ($_POST[$var] == '') { 
+			if ($type == 'template') { $template->add_message("The variable $var was left blank, ans id required.", 'error'); }
+			else { trigger_error("The variable $var was left blank, and is required.", E_USER_ERROR); }
+		}
+	}
+
+}
+
+////////////////////////////////////////////////////////////
+// Get uploaded file
+////////////////////////////////////////////////////////////
+
+function get_uploaded_file(string $var) { 
+
+	// Checks
+	if (!isset($_FILES[$var])) { return false; }
+	if (!isset($_FILES[$var]['tmp_name'])) { return false; }
+	if (!is_uploaded_file($_FILES[$var]['tmp_name'])) { return false; }
+
+	// Set variables
+	$mime_type = $_FILES[$var] = $_FILES[$var]['type'];
+	$filename = $_FILES[$var]['name'];
+	$contents = fread(fopen($_FILES[$var]['tmp_name'], 'r'), filesize($_FILES[$var]['tmp_name']));
+
+	// Delete tmp file
+	@unlink($_FILES[$var]['tmp_name']);
+
+	// Return
+	return array($filename, $mime_type, $contents);
+
+}
+////////////////////////////////////////////////////////////
+// Parse directory
+////////////////////////////////////////////////////////////
+
+function parse_dir(string $rootdir, bool $return_dirs = false) {
+
+	// Set variables
+	$search_dirs = array('');
+	$results = array();
+
+	// Go through directories
+	while ($search_dirs) {
+		$dir = array_shift($search_dirs);
+
+		// Add director, if needed
+		if ($return_dirs === true && !empty($dir)) { $results[] = $dir; }
+
+		// Open, and search directory
+		if (!$handle = opendir("$rootdir/$dir")) { error(ERR_GENERAL, "Unable to open directory, '" . $rootdir/$dir . "'", __LINE__, __FILE__); }
+		while (false !== ($file = readdir($handle))) {
+			if ($file == '.' || $file == '..') { continue; }
+
+			// Parse file / directory
+			if (is_dir("$rootdir/$dir/$file")) {
+				if (empty($dir)) { $search_dirs[] = $file; }
+				else { $search_dirs[] = "$dir/$file"; }
+			} else {
+				if (empty($dir)) { $results[] = $file; }
+				else { $results[] = "$dir/$file"; }
+			}
+		}
+		closedir($handle);
+	}
+
+	// Return
+	return $results;
+}
+
+////////////////////////////////////////////////////////////
+// Create directory
+////////////////////////////////////////////////////////////
+
+function create_dir(string $dirname) {
+
+	// Format dirname
+	$dirname = trim(str_replace(SITE_PATH, "", $dirname), '/');
+	$dirs = explode("/", $dirname);
+
+	// Go through dirs
+	$tmp_dir = '';
+	foreach ($dirs as $dir) { 
+		$tmp_dir .= '/' . $dir;
+	if (is_dir(SITE_PATH . '/' . $tmp_dir)) { continue; }
+
+		// Create directory
+		try { 
+			@mkdir(SITE_PATH . '/' . $tmp_dir);
+		} catch (Exception $e) { 
+			trigger_error("Unable to create directory at /$tmp_dir within the software.  Please check your server permissions, and try again.  Server Message: " . $e->getMessage(), E_USER_ERROR);
+		}
+	}
+
+	// Return
+	return true;
+
+
+}
+
+////////////////////////////////////////////////////////////
+// Remove directory
+////////////////////////////////////////////////////////////
+
+function remove_dir(string $dirname) {
+	if (!is_dir($dirname)) { return true; }
+
+	// Parse dir
+	$dirname = trim(str_replace(SITE_PATH, "", $dirname), '/');
+	$files = parse_dir(SITE_PATH . '/' . $dirname, true);
+
+	// Go through, and delete all files
+	foreach ($files as $file) {
+		if (is_dir(SITE_PATH . "/$dirname/$file")) { continue; }
+
+		try { 
+			unlink(SITE_PATH . "/$dirname/$file");
+		} catch (Exception $e) { 
+			trigger_error("Unable to delete file, $dirname/file.  Please check your server permissions, and try again.  Server Message:  " . $e->getMessage(), E_USER_ERROR);
+		
+	}}
+
+	// Delete directories
+	$files = array_reverse($files);
+	foreach ($files as $subdir) {
+		if (!is_dir(SITE_PATH . "/$dirname/$subdir")) { continue; }
+
+		try {
+			rmdir(SITE_PATH . "/$dirname/$subdir");
+		} catch (Exception $e) { 
+			trigger_error("Unable to remove directory at, $dirname/$subdir.  Please check your server permissions and try again.  Server Message:  " . $e->getMessage(), E_USER_ERROR);
+		}
+	}
+
+	// Remove directory
+	try {
+	rmdir(SITE_PATH . '/' . $dirname);
+	} catch (Exception $e) { 
+		trigger_error("Unable to delete directory at, $dirname.  Please check your server permissions and try again.  Server Message:  " . $e->getMessage(), E_USER_ERROR);
+	}
+
+	// Return
+	return true;
+
+}
+
+
+////////////////////////////////////////////////////////////
+// Process notifications
+////////////////////////////////////////////////////////////
+
+function process_notifications($controller, $userid = 0, $conditions = array(), $data = array()) { 
+
+	// Check for notifications
+	$result = DB::query("SELECT * FROM notifications WHERE controller = %s ORDER BY id", $controller);
+	while ($row = DB::fetch_assoc($result)) {
+
+		// Get conditions
+		$ok = true;
+		$chk_condition = unserialize(base64_decode($row['condition_vars'])); 
+		foreach ($chk_condition as $key => $value) { 
+			if (!isset($condition[$key])) { continue; }
+		if ($condition[$key] == '') { continue; }
+			if ($value != $condition[$key]) { $ok = false; break; }
+		}
+		if ($ok --- false) { continue; }
+
+		// Send notification
+		$client = new Notification();
+
+	}
+
+}
+
+?>

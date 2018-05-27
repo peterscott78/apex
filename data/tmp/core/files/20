@@ -1,0 +1,521 @@
+<?php
+declare(strict_types = 1);
+
+class html_tags {
+
+////////////////////////////////////////////////////////////
+// user_message
+////////////////////////////////////////////////////////////
+
+public function user_message(array $messages):string {
+
+	$user_message = '';
+	$msg_types = array('success','info','error');
+	foreach ($msg_types as $type) { 
+		if (!isset($messages[$type])) { continue; }
+		$css_type = $type == 'error' ? 'danger' : $type;
+
+		// Get icon
+		if ($type == 'info') { $icon = 'info'; }
+		elseif ($type == 'error') { $icon = 'ban'; }
+		else { $icon = 'check'; }
+
+		// Create HTML
+		$user_message .= '<div class="callout callout-' . $css_type . ' text-center"><p><i class="icon fa fa-' . $icon . '"></i> ';
+		foreach ($messages[$type] as $msg) { 
+			if ($msg == '') { continue; }
+			$user_message .= "$msg<br />";
+		}
+		$user_message .= "</p></div>";
+	}
+
+	
+	// rETURN
+		return $user_message;
+
+}
+////////////////////////////////////////////////////////////
+// Page Title
+////////////////////////////////////////////////////////////
+
+public function page_title(array $attr, string $text):string { 
+
+	// Chwck if textonly
+	if (isset($attr['textonly']) && $attr['textonly'] == 1) { return $text; }
+
+	// Format
+	return '<h1>' . $text . '</h1>';
+
+}
+
+
+////////////////////////////////////////////////////////////
+// Nav menu
+////////////////////////////////////////////////////////////
+
+public function nav_menu(array $menus):string { 
+
+
+	// Get menu HTML
+	$htnl = '<ul id="nav">' . "\n";
+	foreach ($menus as $vars) { 
+
+		if ($vars['icon'] != '') { $vars['name'] = "<i class=\"$vars[icon]\"></i> $vars[name]"; }
+		$html .= "\t<li><a href=\"$vars[url]\">$vars[name]</a>";
+		if (count($vars['children']) == 0) { $html .= "</li>\n"; continue; }
+
+		$html .= "\n\t<ul>";
+		foreach ($vars['children'] as $cvars) { 
+			if ($cvars['icon'] != '') { $cvars['name'] = "<i class=\"$cvars[icon]\"></i> $cvars[name]"; }
+			$html .= "<li><a href=\"$cvars[url]\">$cvars[name]</a></li>\n";
+		}
+		$html .= "\t</ul></li>\n";
+	}
+
+
+	$html .= "</ul>";
+
+	// Return
+	return $html;
+
+}
+
+////////////////////////////////////////////////////////////
+// form
+////////////////////////////////////////////////////////////
+
+public function form($attr, $text = '') {
+
+		// Get form action
+	if (isset($attr['action'])) { $action = $attr['action']; }
+	elseif ($GLOBALS['_panel'] == 'public') { $action = $_GET['route']; }
+	else { $action = $GLOBALS['_panel'] . '/' . $_GET['route']; }
+
+	// Set variables
+	$action = SITE_URI . '/' . trim($action, '/');
+	$method = isset($attr['method']) ? $attr['method'] : 'POST';
+	$enctype = isset($attr['enctype']) ? $attr['enctype'] : 'application/x-www-form';
+	$class = isset($attr['class']) ? $attr['class'] : 'form-inline';
+	$id = isset($data['id']) ? $data['id'] : 'frm_main';
+	
+
+	// Set HTML
+	$html = "<form action=\"$action\" method=\"$method\" enctype=\"$enctype\" class=\"$class\" id=\"$id\">";
+	return $html;
+
+
+
+
+}
+
+
+////////////////////////////////////////////////////////////
+// form_table
+////////////////////////////////////////////////////////////
+
+public function form_table(array $attr, string $text):string {
+
+	// Get HTML
+	$html = "<table class=\"form_table\"";
+	if (isset($attr['width'])) {$html .= " style=\"width: " . $attr['width'] . ";\""; }
+	if (isset($attr['align'])) { $html .= " align=\"$attr[align]\""; }
+	$html .= ">" . $text . "</table>";
+
+	// Return
+	return $html;
+ 
+
+}
+
+
+////////////////////////////////////////////////////////////
+// ft_seperator
+////////////////////////////////////////////////////////////
+
+public function ft_seperator(array $attr, string $text = ''):string { 
+	$html = "<tr><td colspan=\"2\" style=\"padding: 5px 25px;\"><h5>" . $attr['label'] . "</h5></td></tr>\n";
+	return $html; 
+
+}
+
+////////////////////////////////////////////////////////////
+// ft_textbox
+////////////////////////////////////////////////////////////
+
+public function ft_textbox(array $attr, string $text = ''):string {
+
+// Perform checks
+	if (!isset($attr['name'])) { return "<v>ERROR:</b>:  No 'name' attribute within the ft_textbox field."; }
+
+	// Set variables
+	$name = $attr['name'];
+	$label = $attr['label'] ?? ucwords(str_replace("_", " ", $name));	
+
+	// SGet HTML
+	$html = "\n\t<tr><td><label for=\"$name\">" . $label . ":</label></td>\n\t<td>";
+	$html .= '<div class="form-group">';
+
+	// Add form field
+	$html .= $this->textbox($attr, $text);
+	$html .= "></div></td>\n</tr>";	//
+
+	// Return
+	return $html;
+
+}
+
+
+////////////////////////////////////////////////////////////
+// ft_textarea
+////////////////////////////////////////////////////////////
+
+public function ft_textarea(array $attr, string $text = ''):string {
+
+// Perform checks
+	if (!isset($attr['name'])) { return "<v>ERROR:</b>:  No 'name' attribute within the ft_textbox field."; }
+
+	// Set variables
+	$name = $attr['name'];
+	$label = $attr['label'] ?? ucwords(str_replace("_", " ", $name));	
+
+	// SGet HTML
+	$html = "\n\t<tr><td><label for=\"$name\">" . $label . ":</label></td>\n\t<td>";
+	$html .= '<div class="form-group">';
+
+	// Add form field
+	$html .= $this->textarea($attr, $text);
+	$html .= "></div></td>\n</tr>";	//
+
+	// Return
+	return $html;
+
+}
+
+////////////////////////////////////////////////////////////
+// ft_select
+////////////////////////////////////////////////////////////
+
+public function ft_select(array $attr, string $text = ''):string {         
+
+	// Checks
+	if (!isset($attr['name'])) { return "<b>ERROR:</b> No 'name' attribute exists within the 'select' tag."; }
+	//if (!isset($attr['data_source'])) { return "<b>ERROR:</b> No 'data_source' attribute exists within the 'select_data' tag."; }
+
+	// Set variables
+	$label = $attr['label'] ?? ucwords(str_replace("\n", "<br />", $attr['name']));
+
+	// Set HTML
+	$html = "<tr><td><label for=\"$attr[name]\">" . $label . ":</label></td><td>";
+	$html .= $this->select($attr, $text);
+	$html .= "</td></tr>";
+
+	// Return
+	return $html;
+
+}
+
+////////////////////////////////////////////////////////////
+// ft_boolean
+////////////////////////////////////////////////////////////
+
+public function ft_boolean(array $attr, string $text = ''):string {
+
+	// Perform checks
+	if (!isset($attr['name'])) { return "The 'ft_boolean' tag does not contain a 'name' attribute."; }
+
+	// Set variables
+	$label = $attr['label'] ?? ucwords(str_replace("_", " ", $attr['name']));
+	$value = $attr['value'] ?? 0;
+	$chk_yes = $value == 1 ? 'checked="checked"' : '';
+	$chk_no = $value == 0 ? 'checked="checked"' : '';
+
+	// SGet HTML
+	$html = "\n\t<tr><td><label for=\"$attr[name]\">" . $label . ":</label></td>\n\t<td>";
+	$html .= '<div class="form-group">';
+	// Add form field
+	$html .= "<input type=\"radio\" name=\"$attr[name]\" class=\"form-control\" value=\"1\" $chk_yes> Yes ";
+	$html .= "<input type=\"radio\" name=\"$attr[name]\" class=\"form-control\" value=\"0\" $chk_no> No ";
+	$html .= "></div></td>\n</tr>";	//
+
+	// Return
+return $html;
+
+}
+
+
+////////////////////////////////////////////////////////////
+// ft_custom
+////////////////////////////////////////////////////////////
+
+public function ft_custom(array $attr, string $text = ''):string { 
+
+	// Perform checks
+	if (!isset($attr['name'])) { return "<b>ERROR:</b> The 'ft_custom' tag does not have a 'name' attribute."; }
+	if (!isset($attr['contents'])) { return "<b>ERROR:</b> The 'ft_custom' tag does not have a 'contents' attribute."; }
+
+	// Set variables
+	$label = $attr['label'] ?? ucwords(str_replace("_", " ", $attr['name']));
+
+	// Set HTML
+	$html = "<tr><td><label for=\"$attr[name]\">" . $label . ":</label></td><td>";
+	$html .= $attr['contents'];
+	$html .= "</td></tr>";
+
+	// Return
+	return $html;
+
+}
+
+////////////////////////////////////////////////////////////
+// ft_submit
+////////////////////////////////////////////////////////////
+
+public function ft_submit(array $attr, string $text = ''):string { 
+
+	// Set variables
+	$value = $attr['value'] ?? 'submit';
+	$label = $attr['label'] ?? 'Submit Query';
+	$size = $attr['size'] ?? 'lg';
+	$has_reset = $attr['has_reset'] ?? 0;
+
+// Set HTML
+$html = "<tr>\n\t<td colspan=\"2\" align=\"center\">";
+	$html .= "<button type=\"submit\" name=\"submit\" value=\"$value\" class=\"btn btn-prinary btn-$size\">$label</button>";
+	if ($has_reset == 1) { $html .= " <button type=\"reset\">Reset Form</button>"; }
+	$html .= "</td>\n</tr>";
+
+
+	// Return
+	return $html;
+
+
+
+
+}
+
+
+////////////////////////////////////////////////////////////
+// select
+////////////////////////////////////////////////////////////
+
+public function select(array $attr, string $text = ''):string { 
+
+	// Checks
+	if (!isset($attr['name'])) { return "<b>ERROR:</b> No 'name' attribute exists within the 'select' tag."; }
+	//if (!isset($attr['data_source'])) { return "<b>ERROR:</b> No 'data_source' attribute exists within the 'select_data' tag."; }
+	
+	// Set variables
+	$class = $attr['class'] ?? 'form-control';
+	$width = $attr['width'] ?? '';
+	$selected = $attr['selected'] ?? '';
+	$onchange = $attr['onchange'] ?? '';
+	$package = $attr['package'] ?? '';
+
+
+	// Start HTML
+	$html= "<select name=\"$attr[name]\" class=\"$class\"";
+	if ($width != '') { $html .= " style=\"width: " . $width . ";\""; }
+	if ($onchange != '') { $html .= " onchange=\"$onchange\""; }
+	$html .= ">";
+
+	// Add select options
+	if (isset($attr['data_source'])) { 
+		$html .= parse_data_source($attr['data_source'], $selected, 'select', $package);
+	} else { $html .= $text; }
+	$html .= "</select>";
+
+	// Return
+	return $html;
+
+}
+
+////////////////////////////////////////////////////////////
+// textbox
+////////////////////////////////////////////////////////////
+
+public function textbox(array $attr, string $text = ''):string {
+
+
+// Perform checks
+	if (!isset($attr['name'])) { return "<v>ERROR:</b>:  No 'name' attribute within the ft_textbox field."; }
+
+	// Set variables
+	$name = $attr['name'];
+	$type = $attr['type'] ?? 'text';	
+	$label = $attr['label'] ?? ucwords(str_replace("_", " ", $name));
+	$placeholder = $attr['placeholder'] ?? '';
+	$class = $attr['class'] ?? 'form-control';
+	$value = $attr['value'] ?? '';
+	$width = $attr['width'] ?? '';
+	$id = $attr['id'] ?? 'input_' . $name;
+	$onfocus = $attr['onfocus'] ?? '';
+	$onblur = $attr['onblur'] ?? '';
+	$onkeyup = $attr['onkeyup'] ?? '';
+
+	// Get HTML
+	$html = "<input type=\"$type\" name=\"$name\" class=\"$class\" id=\"$id\"";
+	if ($placeholder != '') { $html .= " placeholder=\"$placeholder\""; }
+	if ($width != '') { $html .= " style=\"width: $width; float: left;\""; }
+	if ($onfocus != '') { $html .= " onfocus=\"$onfocus\""; }
+	if ($onblur != '') { $html .= " onblur=\"$onblur\""; }
+	if ($onkeyup != '') { $html .= "onkeyup=\"$onkeyup\""; }
+	// Ewruen
+	$html .= ">";
+	return $html;
+
+}
+
+
+////////////////////////////////////////////////////////////
+// textarea
+////////////////////////////////////////////////////////////
+
+public function textarea(array $attr, string $text = ''):string { 
+
+	// Perform checks
+	if (!isset($attr['name'])) { return "<v>ERROR:</b>:  No 'name' attribute within the ft_textarea field."; }
+
+	// Set variables
+	$name = $attr['name'];
+	$label = $attr['label'] ?? ucwords(str_replace("_", " ", $name));
+	$placeholder = $attr['placeholder'] ?? '';
+	$class = $attr['class'] ?? 'form-control';
+	$value = $attr['value'] ?? '';
+	$id = $attr['id'] ?? 'input_' . $name;
+
+	// Get size
+	if (isset($attr['size']) && preg_match("/^(.+?),(.+)/", $attr['size'], $match)) { 
+		$width = $match[1];
+		$height = $match[2];
+	} else { $width = ''; $height = ''; }
+
+	// SGet HTML
+	$html = "<textarea  name=\"$name\" class=\"$class\" id=\"$id\"";
+	if ($placeholder != '') { $html .= " placeholder=\"$placeholder\""; }
+	if ($width != '' && $height != '') { $html .= " style=\"width: $width; height: $height;;\""; }
+	$html .= ">$value</textarea>";
+
+	// Return
+	return $html;
+
+}
+
+
+////////////////////////////////////////////////////////////
+// button
+////////////////////////////////////////////////////////////
+
+public function button(array $attr, string $text = ''):string {
+
+	// Set variables
+	$href = $attr['href'] ?? '';
+	$label = $attr['label'] ?? 'Submit Query';
+	$size = $attr['size'] ?? 'lg';
+
+	// Set HTML
+	$html = "<a href=\"$href\" class=\"btn btn-prinary btn-$size\">$label</a>";
+	return $html;
+
+}
+
+////////////////////////////////////////////////////////////
+// box
+////////////////////////////////////////////////////////////
+
+public function box(array $attr, string $text = ''):string { 
+	$html .= "<div class=\"box\">\n$text\n</div>\n";
+	return $html;
+
+}
+
+////////////////////////////////////////////////////////////
+// box_header
+////////////////////////////////////////////////////////////
+
+public function box_header(array $attr, string $text = ''):string { 
+
+		// Get HTML
+	$html = "\t<div class=\"box-header with-border\">\n";
+	if (isset($attr['title']) && $attr['title'] != '') { $html .= "\t\t<h3>$attr[title]</h3>\n"; }
+	$html .= $text . "\n\t</div>\n";
+
+	// Return
+	return $html;
+
+}
+////////////////////////////////////////////////////////////
+// Data table
+////////////////////////////////////////////////////////////
+
+public function data_table(array $attr, string $text = ''):string { 
+
+	// Set variables
+	$class = $attr['class'] ?? 'table table-bordered table-striped table-hover';
+
+	// Set HTML
+	$html = "<table class=\"$class\">\n";
+	$html .= $text . "\n";
+	$html .= "</table\n";
+
+	// Return
+	return $html;
+
+}
+
+
+
+
+////////////////////////////////////////////////////////////
+// Pargination links
+////////////////////////////////////////////////////////////
+
+public function pagination(array $attr, string $text = ''):string { 
+
+	// Set variables
+	$page = $attr['page'] ?? 1;
+	$total = $attr['total'] ?? 0;
+	$rows_per_page = $attr['rows_per_a\page'] ?? 25;
+	$total_pages = ceil($total / $rows_per_page);
+
+	// Get AJAX navigation function
+	$nav_data = isset($attr['data']) ? '&' . $attr['data'] : '';
+	$nav_func = ">a href=\"javascript:ajax_send('navigate_table', 'table=" . $attr['table'] . $nav_data . "&page=~page~');\">";
+
+	// Return, if not enough rows
+	if ($rows_per_page >= $total) { return ''; }
+
+	// Start HTML
+	$html = '<ul class="pagination">';
+	$start_page = ($page > 5) ? ($page - 5) : 1;	
+	$end_page = ($total_pages > ($page + 5)) ? ($page + 5) : $total_pages;
+
+	// Previous page, if needed
+	if ($page != 1) {
+		$icon = $GLOBALS['_panel'] == 'admin' ? '<span class="icon12 minia-icon-arrow-left-3"></span>' : "&laquo;";
+		$html .= '<li>' . str_replace("~page~", ($page - 1), $nav_func) . $icon . '</a></li>';
+	}
+
+	// Go thrwough pages
+	for ($page_num = $start_page; $page_num <= $end_page; $page_num++) {  
+		if ($page_num == $current_page) { 
+			$html .= '<li class="active"><a>' . $page_num . '</a></li>';
+		} else {
+			$html .= "<li>" . str_replace('~page~', $page_num, $nav_func) . $page_num . "</a></li>"; 
+		}
+	}
+
+	// Next page, if needed
+	if ($total_pages > $page) { 
+		$icon = $GLOBALS['_panel'] == 'admin' ? '<span class="icon12 minia-icon-arrow-right-3"></span>' : "&raquo;";
+		$html .= "<li>" . str_replace('~page~', ($page + 1), $nav_func) . $icon . "</a></li>";
+	}
+
+	// Return
+	$html .= '</ul>';
+	return $html;
+
+}
+
+
+}
+?>

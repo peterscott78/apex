@@ -1,0 +1,176 @@
+
+<h1>Data Tables</h1>
+
+<p>Data Tables are quality, stylish tables with full AJAX functionality allowing you to easily display and manage any information within the database.  AJAX functionality includes pagination, sorting, quick search, deletion of records, and more, meaning all these functional are executed instantly without a page reload.  Data Tables are extremely quick and easy to develop, and can be placed in any template with one HTML tag.</p>
+<br />
+
+
+<h3>Getting Started -- Add Database Table</h3>
+
+<p>To get started, we first need some data in our mySQL database to display and manage.  Execute the following SQL code against your database, which will create a table titled "test_contacts" with some default rows.</p>
+
+<div class="code"><pre>
+CREATE TABLE test_contacts ( 
+	id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, 
+	is_active TINYINT(1) NOT NULL DEFAULT 1, 
+	first_name VARCHAR(100) NOT NULL, 
+	last_name VARCHAR(100) NOT NULL, 
+	email VARCHAR(100) NOT NULL, 
+	country VARCHAR(5) NOT NULL, 
+	date_added TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) engine=InnoDB;
+
+INSERT INTO test_contacts (first_name,last_name,email,country) VALUES ('John', 'Smith', 'john@domain.com', 'US');
+INSERT INTO test_contacts (first_name,last_name,email,country) VALUES ('John', 'Smith', 'john@domain.com', 'US');
+INSERT INTO test_contacts (first_name,last_name,email,country) VALUES ('John', 'Smith', 'john@domain.com', 'US');
+INSERT INTO test_contacts (first_name,last_name,email,country) VALUES ('John', 'Smith', 'john@domain.com', 'US');
+INSERT INTO test_contacts (first_name,last_name,email,country) VALUES ('John', 'Smith', 'john@domain.com', 'US');
+INSERT INTO test_contacts (first_name,last_name,email,country) VALUES ('John', 'Smith', 'john@domain.com', 'US');
+INSERT INTO test_contacts (first_name,last_name,email,country) VALUES ('John', 'Smith', 'john@domain.com', 'US');
+INSERT INTO test_contacts (first_name,last_name,email,country) VALUES ('John', 'Smith', 'john@domain.com', 'US');
+</pre></div><br />
+
+
+<h3>Create a Data Table</h3>
+
+<p>Now that we have some data in our database to use, let's create a data table to display and manage it.  Create a new file within the software at /data/table/mytest/test_contacts.php with the following contents:</p>
+
+<div class="code"><pre>
+<?php
+
+class table_mytest_test_contacts {
+
+////////////////////////////////////////////////////////////
+// Construct
+////////////////////////////////////////////////////////////
+
+public function __construct(array $data = array()) { 
+
+	// Set variables
+	$this->has_search = 1;
+	$this->rows_per_page = 3;
+	$this->delete_button = 'Delete Checked Contacts';
+
+	// Set form field
+	$this->form_field = 'checkbox';
+	$this->form_name = 'contact_id';
+	$this->form_value = 'id_raw';
+
+	// Set columns
+	$this->columns = array(
+		'id' => 'ID', 
+		'is_active' => 'Active', 
+		'first_name' => 'First Name', 
+		'last_name' => 'Last Name', 
+		'email' => 'E-Mail', 
+		'country' => 'Country', 
+		'date_added' => 'Date Added
+	);
+
+	// Set sortable columns
+	$this->sortable = array('first_name', 'last_name', 'email', 'country', 'date_added');
+
+}
+
+}
+
+?>
+</pre></div><br />
+
+>[?Each data table has it's own PHP class with a constructor to define the basic properties of the table, as explained below.</p>
+
+<ul>
+	<li>The class file must be located at /data/PACKAGE/TABLE_ALIAS.php.</li>
+	<li>The name of the PHP class must be "table_PACKAGE_TABLE_ALIAS".</li>
+	<li>$this->hash_search -- A boolean (1/0), and if 1 a small textbox will appear in the top-right corner of the table allowing for a quick search via AJAX.  Defaults to 0>,/li>
+	<li>$this->rows_per_page -- Defines the number of rows to display per-page.  If 0 or not defined, assumes no pagination is required.</li>
+	<li>$this->delete_button -- Optional, and if defined will place a button in the bottom left corner of the table, allowing any checked rows to be instantly deleted via AJAX.</li>
+	<li>$this->form_field, form_name, form_value -- Optional, and $this->form_field can be either "checkbox" or "radio", which will add that form field type in the left most column of the table.  The $this->form_name is the name of the radio / checkbox field, and $this->form_value is the value of that field.</li>
+	<li>$this->columns -- A simple key-value pair defining the columns of the table.  They keys are the alias of each column, which can be anything desired, but where possible should be the names of the columns within the mySQL database.  The values are simply the name of the column displayed in the web browser.  This is the only property that is required within the constructor.</li>
+	<li>$this->sortable -- Optional, and a simple array consisting of the keys from the $this->columns array of the columns that can be sorted via AJAX.  Any columns defined here will have ascending / descending arrays beside the column name when displayed in the web browser.</li>
+</ul><br />
+
+
+<h3>Make it All Work</h3>
+
+<p>Now that we have our mySQL database, and a basic PHP class defining our table properties, we need to add the nuts &amp; bolts to make it functional.  Add the following methods to our table PHP class.</p>
+
+<h4>get_total() Method</h4>
+
+<div class="code"><pre>
+
+////////////////////////////////////////////////////////////
+// Get total rows
+////////////////////////////////////////////////////////////
+
+public function get_total() { 
+
+	$total = DB::get_field("SELECT count(*) FROM test_contacts");
+	return $total;
+
+}
+</pre></div>
+
+<p>This method simple returns an integer of the total number of rows within the dataset, which is used to generate the appropriate pagination links.  Only required if the $this->rows_per_page variable is defined within the constructor, and is greater than 0.  Otherwise, you can leave this method out.</p>
+<br />
+
+<h4>get_rows($start = 0, $order_by = 'id') Method</h4>
+
+<div class="code"><pre>
+////////////////////////////////////////////////////////////
+// Get rows
+////////////////////////////////////////////////////////////
+
+public function get_rows($start = 0, $order_by = 'id asc') { 
+
+	// Get rows
+	$results = array();
+	$result = DB::query("SELECT * FROM test_contacts ORDER BY $order_by LIMIT $start,$this->rows_per_page");
+	while ($row = DB::fetch_assoc($result) { 
+		array_push($results, $this->format_row($row));
+	}
+
+	// Return
+	return $results;
+}
+</pre></div>
+
+<p>This method retrieves the appropriate rows from the database, formats them appropriately, and returns them as an array of arrays, with each array element being one row.  Whatever is returned by this method is exactly what is displayed to the user in their web browser.</p>
+
+
+<h4>format_row($row) Method</h4>
+
+<div class="code"><pre>
+////////////////////////////////////////////////////////////
+// Format Row
+////////////////////////////////////////////////////////////
+
+public function format_row($row) { 
+
+	// Format
+	$row['is_active' = $row['active'] == 1 ? 'Yes' : 'No';
+	$row['date_added'] = fdate($row['date_added']);
+	$row['manage'] = "<center><a href=\"" . SITE_URI . "/admin/mytest/contacts_manage?contact_id=$row[id]\" class=\"btn btn-primary btn-md\">Manage</a></center>";
+	$row['id_html'] = '<center>' . $row['id'] . '</center>';
+
+	// Return
+	return $row;
+
+}
+</pre></div>
+
+<p>
+
+
+ 
+
+
+	r
+
+
+
+
+
+
+
+
